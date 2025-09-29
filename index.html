@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Yash Naikwadi Portfolio</title>
+  <title>Yash Naikwadi Portfolio1</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
 
@@ -465,32 +465,96 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const portfolioItems = document.querySelectorAll('.portfolio-content');
-  
+
   portfolioItems.forEach(item => {
     const video = item.querySelector('.hover-video');
     const staticImage = item.querySelector('.static-image');
+    const portfolioLink = item.querySelector('.portfolio-link');
+
+    if (!video) return;
+
+    // Ensure required attributes for autoplay & mobile inline playback
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.setAttribute('muted', '');
+    video.setAttribute('loop', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('preload', 'auto');
+    video.setAttribute('autoplay', '');
+
+    // Fallback inline styles (in case CSS wasn't added)
+    video.style.opacity = '0';
+    video.style.transition = 'opacity .25s ease';
+    video.style.position = video.style.position || 'absolute';
+    video.style.top = '0';
+    video.style.left = '0';
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'cover';
+    video.style.pointerEvents = 'none';
+
+    if (staticImage) {
+      staticImage.style.transition = 'opacity .25s ease';
+      staticImage.style.display = 'block';
+    }
+
+    // Try to prime the video to start playing (muted autoplay should allow this)
+    const tryPlay = () => {
+      try {
+        const p = video.play();
+        if (p && p.catch) p.catch(() => { /* autoplay rejected — ok */ });
+      } catch (e) {
+        // older browsers might throw
+      }
+    };
+
+    // attempt to autoplay/prime once on load
+    tryPlay();
+
+    // Show preview on pointerenter (covers mouse + touch pointer)
+    item.addEventListener('pointerenter', () => {
+      video.style.opacity = '1';
+      if (staticImage) staticImage.style.opacity = '0';
+      // if paused (some browsers paused it), try to play again
+      if (video.paused) tryPlay();
+    });
+
+    // Hide preview on pointerleave
+    item.addEventListener('pointerleave', () => {
+      video.style.opacity = '0';
+      if (staticImage) staticImage.style.opacity = '1';
+      // pause and reset to start to save bandwidth and keep consistent preview
+      try { video.pause(); video.currentTime = 0; } catch (e) {}
+    });
+
+    // keyboard accessibility: show on focus
+    item.addEventListener('focusin', () => {
+      video.style.opacity = '1';
+      if (staticImage) staticImage.style.opacity = '0';
+      if (video.paused) tryPlay();
+    });
+    item.addEventListener('focusout', () => {
+      video.style.opacity = '0';
+      if (staticImage) staticImage.style.opacity = '1';
+      try { video.pause(); video.currentTime = 0; } catch (e) {}
+    });
+
+    // Optional: prevent link navigation when previewing (uncomment if you want this behavior)
     
-    if (video) {
-      // Force video to be ready
-      video.preload = 'auto';
-      video.load();
-      
-      item.addEventListener('mouseenter', function() {
-        video.style.opacity = '1';
-        staticImage.style.opacity = '0';
-        video.play().catch(e => console.log('Play error:', e));
-      });
-      
-      item.addEventListener('mouseleave', function() {
-        video.style.opacity = '0';
-        staticImage.style.opacity = '1';
-        video.pause();
-        video.currentTime = 0;
+    if (portfolioLink) {
+      portfolioLink.addEventListener('click', function(e) {
+        if (video.style.opacity === '1') {
+          e.preventDefault(); // user is previewing — don't navigate
+        }
       });
     }
+    
   });
 });
 </script>
+
 
 </body>
 </html>
