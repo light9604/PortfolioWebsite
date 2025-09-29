@@ -470,36 +470,23 @@ document.addEventListener('DOMContentLoaded', function() {
   portfolioItems.forEach(item => {
     const video = item.querySelector('.hover-video');
     const staticImage = item.querySelector('.static-image');
-    const portfolioLink = item.querySelector('.portfolio-link');
     
     if (video) {
-      // Preload video metadata
-      video.preload = 'metadata';
+      // Force video to be ready
+      video.preload = 'auto';
+      video.load();
       
-      // When hovering over portfolio item
       item.addEventListener('mouseenter', function() {
-        if (video.readyState >= 2) { // HAVE_CURRENT_DATA or better
-          video.style.opacity = '1';
-          if (staticImage) staticImage.style.opacity = '0';
-          video.play().catch(error => {
-            console.log('Video play failed:', error);
-          });
-        }
+        video.style.opacity = '1';
+        staticImage.style.opacity = '0';
+        video.play().catch(e => console.log('Play error:', e));
       });
       
-      // When leaving portfolio item
       item.addEventListener('mouseleave', function() {
         video.style.opacity = '0';
-        if (staticImage) staticImage.style.opacity = '1';
+        staticImage.style.opacity = '1';
         video.pause();
         video.currentTime = 0;
-      });
-      
-      // Prevent link click when video is playing
-      portfolioLink.addEventListener('click', function(e) {
-        if (video.style.opacity === '1') {
-          e.preventDefault();
-        }
       });
     }
   });
